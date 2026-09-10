@@ -9,68 +9,87 @@ import petrophysics as petro
 # Page Configuration & CSS Styling
 # ---------------------------------------------------------
 st.set_page_config(
-    page_title="Well Log & Petrophysics Estimator",
+    page_title="PetroEval Dashboard",
     page_icon="🪵",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
-# Custom CSS for dark theme aesthetic and modern KPI cards
+# Custom CSS: Hides sidebar completely, removes gradients, uses solid dark background
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
     
-    html, body, [data-testid="stAppViewContainer"] {
+    html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
         font-family: 'DM Sans', sans-serif;
+        background-color: #0b132b !important;
+        color: #f8fafc !important;
     }
     
-    /* Hide top header decoration */
-    header[data-testid="stHeader"] {
-        background-color: transparent !important;
+    /* Hide sidebar completely */
+    [data-testid="stSidebar"], section[data-testid="stSidebar"] {
+        display: none !important;
     }
     
-    /* Custom Header Banner */
+    /* Hide top header toolbar */
+    header[data-testid="stHeader"], [data-testid="stToolbar"] {
+        display: none !important;
+    }
+    
+    .block-container {
+        padding: 1.5rem 2rem 3rem !important;
+        max-width: 1400px !important;
+    }
+    
+    /* Header Container - Solid color background, no gradients */
     .app-header {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        border: 1px solid #334155;
-        border-radius: 12px;
-        padding: 1.5rem 2rem;
-        margin-bottom: 1.5rem;
+        background-color: #1c2541;
+        border: 1px solid #3a506b;
+        border-radius: 10px;
+        padding: 1.25rem 1.8rem;
+        margin-bottom: 1.25rem;
         color: #f8fafc;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
     .app-header h1 {
-        font-size: 1.8rem;
+        font-size: 1.9rem;
         font-weight: 700;
-        margin: 0 0 0.4rem 0;
-        color: #38bdf8;
+        margin: 0 0 0.3rem 0;
+        color: #6fffe9;
     }
     .app-header p {
-        font-size: 0.95rem;
+        font-size: 0.92rem;
         color: #94a3b8;
         margin: 0;
     }
     
-    /* KPI Card styling */
+    /* Top Depth Control Card - Solid background */
+    .control-card {
+        background-color: #1c2541;
+        border: 1px solid #3a506b;
+        border-radius: 10px;
+        padding: 1.2rem 1.5rem;
+        margin-bottom: 1.25rem;
+    }
+    
+    /* KPI Metric Cards - Solid dark slate color, no gradients */
     .kpi-container {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
         gap: 1rem;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.25rem;
     }
     .kpi-card {
-        background: #1e293b;
-        border: 1px solid #334155;
+        background-color: #1c2541;
+        border: 1px solid #3a506b;
         border-radius: 10px;
-        padding: 1rem 1.2rem;
-        transition: transform 0.2s ease, border-color 0.2s ease;
+        padding: 0.95rem 1.1rem;
+        transition: border-color 0.2s ease;
     }
     .kpi-card:hover {
-        border-color: #38bdf8;
-        transform: translateY(-2px);
+        border-color: #6fffe9;
     }
     .kpi-label {
-        font-size: 0.78rem;
+        font-size: 0.75rem;
         font-weight: 600;
         color: #94a3b8;
         text-transform: uppercase;
@@ -78,32 +97,40 @@ st.markdown("""
     }
     .kpi-value {
         font-family: 'JetBrains Mono', monospace;
-        font-size: 1.6rem;
+        font-size: 1.55rem;
         font-weight: 700;
-        color: #f8fafc;
-        margin: 0.3rem 0;
+        color: #ffffff;
+        margin: 0.25rem 0;
     }
     .kpi-subtitle {
-        font-size: 0.75rem;
-        color: #38bdf8;
+        font-size: 0.72rem;
+        color: #6fffe9;
     }
     
-    /* Badges */
+    /* Solid color Badges */
     .badge {
         display: inline-block;
-        padding: 0.2rem 0.6rem;
-        border-radius: 6px;
-        font-size: 0.75rem;
+        padding: 0.18rem 0.55rem;
+        border-radius: 5px;
+        font-size: 0.72rem;
         font-weight: 600;
     }
-    .badge-blue { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
-    .badge-amber { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
-    .badge-green { background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); }
-    .badge-purple { background: rgba(168, 85, 247, 0.15); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.3); }
+    .badge-blue { background-color: #1e3a8a; color: #60a5fa; border: 1px solid #2563eb; }
+    .badge-amber { background-color: #78350f; color: #fbbf24; border: 1px solid #d97706; }
+    .badge-green { background-color: #064e3b; color: #4ade80; border: 1px solid #16a34a; }
+    .badge-purple { background-color: #581c87; color: #c084fc; border: 1px solid #9333ea; }
     
-    /* Data table override */
+    /* Streamlit expander styling */
+    .stExpander {
+        background-color: #1c2541 !important;
+        border: 1px solid #3a506b !important;
+        border-radius: 10px !important;
+        margin-bottom: 1.25rem !important;
+    }
+    
+    /* Data table styling */
     .stDataFrame {
-        border: 1px solid #334155;
+        border: 1px solid #3a506b;
         border-radius: 8px;
     }
 </style>
@@ -128,53 +155,64 @@ default_gr_sand = float(np.round(np.percentile(df_raw['GR'].dropna(), 5), 2))
 default_gr_shale = float(np.round(np.percentile(df_raw['GR'].dropna(), 95), 2))
 
 # ---------------------------------------------------------
-# Sidebar Controls
+# App Header Banner (Solid dark theme, no gradients)
 # ---------------------------------------------------------
-st.sidebar.markdown("## ⚙️ Petrophysical Parameters")
+st.markdown("""
+<div class="app-header">
+    <h1>🪵 PetroEval Dashboard</h1>
+    <p>Interactive formation evaluation, multi-method Shale Volume (V<sub>shale</sub>) calculations, and depth-by-depth petrophysical log visualizer.</p>
+</div>
+""", unsafe_allow_html=True)
 
-st.sidebar.markdown("### 🎯 Target Depth Inspection")
-selected_depth = st.sidebar.number_input(
-    "Enter Depth (ft):",
-    min_value=depth_min,
-    max_value=depth_max,
-    value=float(np.round((depth_min + depth_max) / 2.0, 1)),
-    step=0.5
-)
+# ---------------------------------------------------------
+# Top Control Section: Target Depth Selector & Parameters
+# ---------------------------------------------------------
+top_col1, top_col2 = st.columns([1, 2])
 
-# Slider linked for fast navigation
-st.sidebar.slider(
-    "Depth Navigation Slider",
-    min_value=depth_min,
-    max_value=depth_max,
-    value=selected_depth,
-    step=0.5,
-    key="depth_slider",
-    on_change=lambda: st.session_state.update({"selected_depth": st.session_state.depth_slider})
-)
+with top_col1:
+    selected_depth = st.number_input(
+        "🎯 Enter Target Depth (ft):",
+        min_value=depth_min,
+        max_value=depth_max,
+        value=float(np.round((depth_min + depth_max) / 2.0, 1)),
+        step=0.5
+    )
 
-st.sidebar.divider()
+with top_col2:
+    selected_depth_slider = st.slider(
+        "Navigate Depth Profile:",
+        min_value=depth_min,
+        max_value=depth_max,
+        value=selected_depth,
+        step=0.5
+    )
+    if selected_depth_slider != selected_depth:
+        selected_depth = selected_depth_slider
 
-st.sidebar.markdown("### 🧪 Gamma Ray Baselines")
-gr_sand = st.sidebar.number_input("GR Sand Baseline (API):", value=default_gr_sand, step=1.0)
-gr_shale = st.sidebar.number_input("GR Shale Baseline (API):", value=default_gr_shale, step=1.0)
+# Expandable Parameters & Baselines Control Panel
+with st.expander("⚙️ Calculation Parameters & Baselines", expanded=False):
+    param_col1, param_col2, param_col3 = st.columns(3)
+    
+    with param_col1:
+        st.markdown("##### 🧪 Gamma Ray Baselines")
+        gr_sand = st.number_input("GR Sand Baseline (API):", value=default_gr_sand, step=1.0)
+        gr_shale = st.number_input("GR Shale Baseline (API):", value=default_gr_shale, step=1.0)
+        
+    with param_col2:
+        st.markdown("##### 🧱 Matrix & Fluid Properties")
+        rho_ma = st.number_input("Matrix Density ρ_ma (g/cc):", value=2.65, step=0.01)
+        rho_f = st.number_input("Fluid Density ρ_f (g/cc):", value=1.00, step=0.01)
+        phi_shale = st.number_input("Shale Porosity φ_shale (frac):", value=0.10, step=0.01)
 
-st.sidebar.divider()
-
-st.sidebar.markdown("### 🧱 Matrix & Fluid Properties")
-rho_ma = st.sidebar.number_input("Matrix Density ρ_ma (g/cc):", value=2.65, step=0.01)
-rho_f = st.sidebar.number_input("Fluid Density ρ_f (g/cc):", value=1.00, step=0.01)
-dt_ma = st.sidebar.number_input("Matrix Transit Time Δt_ma (μs/ft):", value=55.5, step=0.5)
-dt_f = st.sidebar.number_input("Fluid Transit Time Δt_f (μs/ft):", value=189.0, step=1.0)
-phi_shale = st.sidebar.number_input("Shale Porosity φ_shale (frac):", value=0.10, step=0.01)
-
-st.sidebar.divider()
-
-st.sidebar.markdown("### 📊 Primary Vshale Model")
-primary_vsh_method = st.sidebar.selectbox(
-    "Default Vshale Method for Plots:",
-    options=['linear', 'steiber', 'larionov_young', 'larionov_old', 'clavier'],
-    index=0
-)
+    with param_col3:
+        st.markdown("##### ⏱️ Sonic Transit & Vsh Model")
+        dt_ma = st.number_input("Matrix Transit Time Δt_ma (μs/ft):", value=55.5, step=0.5)
+        dt_f = st.number_input("Fluid Transit Time Δt_f (μs/ft):", value=189.0, step=1.0)
+        primary_vsh_method = st.selectbox(
+            "Primary Vshale Model:",
+            options=['linear', 'steiber', 'larionov_young', 'larionov_old', 'clavier'],
+            index=0
+        )
 
 # ---------------------------------------------------------
 # Petrophysical Calculations
@@ -204,17 +242,7 @@ row = df_calc.loc[idx_target]
 actual_depth = row['DEPTH']
 
 # ---------------------------------------------------------
-# Header & App Title
-# ---------------------------------------------------------
-st.markdown(f"""
-<div class="app-header">
-    <h1>🪵 Petrophysical Evaluation & Well Log Visualizer</h1>
-    <p>Interactive formation evaluation, multi-method Shale Volume (V<sub>shale</sub>) calculations, and depth-by-depth reservoir analysis.</p>
-</div>
-""", unsafe_allow_html=True)
-
-# ---------------------------------------------------------
-# Single Depth Petrophysical Inspection Cards
+# Single Depth Petrophysical Inspection KPI Cards
 # ---------------------------------------------------------
 st.markdown(f"### 📍 Petrophysical Inspection at **{actual_depth:.2f} ft**")
 
@@ -224,7 +252,7 @@ with kpi_col1:
     st.markdown(f"""
     <div class="kpi-card">
         <div class="kpi-label">Target Depth</div>
-        <div class="kpi-value">{actual_depth:.1f} <span style="font-size:0.9rem">ft</span></div>
+        <div class="kpi-value">{actual_depth:.1f} <span style="font-size:0.85rem">ft</span></div>
         <div class="kpi-subtitle"><span class="badge badge-blue">Selected</span></div>
     </div>
     """, unsafe_allow_html=True)
@@ -282,7 +310,7 @@ with kpi_col6:
 st.markdown("<br>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# Detailed Depth Summary Table & Tabs
+# Multi-Tab Main Interface
 # ---------------------------------------------------------
 tab1, tab2, tab3, tab4 = st.tabs([
     "📈 Multi-Track Log Visualizer",
@@ -310,39 +338,39 @@ with tab1:
     )
     
     # Track 1: Gamma Ray
-    fig.add_trace(go.Scatter(x=df_calc['GR'], y=df_calc['DEPTH'], mode='lines', name='GR (API)', line=dict(color='#22c55e', width=1.5)), row=1, col=1)
+    fig.add_trace(go.Scatter(x=df_calc['GR'], y=df_calc['DEPTH'], mode='lines', name='GR (API)', line=dict(color='#4ade80', width=1.5)), row=1, col=1)
     fig.add_vline(x=gr_sand, line_dash="dash", line_color="#10b981", annotation_text=f"Sand ({gr_sand})", row=1, col=1)
     fig.add_vline(x=gr_shale, line_dash="dash", line_color="#b45309", annotation_text=f"Shale ({gr_shale})", row=1, col=1)
     
     # Track 2: Vshale Models
-    fig.add_trace(go.Scatter(x=df_calc['VSH_linear']*100, y=df_calc['DEPTH'], mode='lines', name='Vsh (Linear)', line=dict(color='#ef4444', width=1.5)), row=1, col=2)
-    fig.add_trace(go.Scatter(x=df_calc['VSH_steiber']*100, y=df_calc['DEPTH'], mode='lines', name='Vsh (Steiber)', line=dict(color='#3b82f6', width=1.5, dash='dash')), row=1, col=2)
-    fig.add_trace(go.Scatter(x=df_calc['VSH_larionov_young']*100, y=df_calc['DEPTH'], mode='lines', name='Vsh (Larionov Young)', line=dict(color='#a855f7', width=1, dash='dot')), row=1, col=2)
+    fig.add_trace(go.Scatter(x=df_calc['VSH_linear']*100, y=df_calc['DEPTH'], mode='lines', name='Vsh (Linear)', line=dict(color='#f87171', width=1.5)), row=1, col=2)
+    fig.add_trace(go.Scatter(x=df_calc['VSH_steiber']*100, y=df_calc['DEPTH'], mode='lines', name='Vsh (Steiber)', line=dict(color='#60a5fa', width=1.5, dash='dash')), row=1, col=2)
+    fig.add_trace(go.Scatter(x=df_calc['VSH_larionov_young']*100, y=df_calc['DEPTH'], mode='lines', name='Vsh (Larionov Young)', line=dict(color='#c084fc', width=1, dash='dot')), row=1, col=2)
     
     # Track 3: Porosity Logs
-    fig.add_trace(go.Scatter(x=df_calc['PHID']*100, y=df_calc['DEPTH'], mode='lines', name='PHID (Density %)', line=dict(color='#ef4444', width=1.5)), row=1, col=3)
-    fig.add_trace(go.Scatter(x=df_calc['PHIS']*100, y=df_calc['DEPTH'], mode='lines', name='PHIS (Sonic %)', line=dict(color='#d946ef', width=1.5, dash='dash')), row=1, col=3)
-    fig.add_trace(go.Scatter(x=df_calc['NPHI']*100, y=df_calc['DEPTH'], mode='lines', name='NPHI (Neutron %)', line=dict(color='#3b82f6', width=1.5, dash='dot')), row=1, col=3)
+    fig.add_trace(go.Scatter(x=df_calc['PHID']*100, y=df_calc['DEPTH'], mode='lines', name='PHID (Density %)', line=dict(color='#f87171', width=1.2)), row=1, col=3)
+    fig.add_trace(go.Scatter(x=df_calc['PHIS']*100, y=df_calc['DEPTH'], mode='lines', name='PHIS (Sonic %)', line=dict(color='#e879f9', width=1.2, dash='dash')), row=1, col=3)
+    fig.add_trace(go.Scatter(x=df_calc['NPHI']*100, y=df_calc['DEPTH'], mode='lines', name='NPHI (Neutron %)', line=dict(color='#60a5fa', width=1.2, dash='dot')), row=1, col=3)
     
     # Track 4: Combo & Effective Porosity
     fig.add_trace(go.Scatter(x=df_calc['PHIND']*100, y=df_calc['DEPTH'], mode='lines', name='PHIND (Total %)', line=dict(color='#f8fafc', width=1.5)), row=1, col=4)
-    fig.add_trace(go.Scatter(x=df_calc['PHIE']*100, y=df_calc['DEPTH'], mode='lines', name='PHIE (Effective %)', line=dict(color='#10b981', width=2)), row=1, col=4)
+    fig.add_trace(go.Scatter(x=df_calc['PHIE']*100, y=df_calc['DEPTH'], mode='lines', name='PHIE (Effective %)', line=dict(color='#34d399', width=2)), row=1, col=4)
     
     # Highlight selected depth with horizontal reference line across all tracks
     for c in range(1, 5):
-        fig.add_hline(y=actual_depth, line_color="#f59e0b", line_width=2, line_dash="solid", row=1, col=c)
+        fig.add_hline(y=actual_depth, line_color="#fbbf24", line_width=2, line_dash="solid", row=1, col=c)
         fig.update_yaxes(autorange="reversed", row=1, col=c, title_text="Depth (ft)" if c == 1 else "")
     
     # Track X ranges
     fig.update_xaxes(title_text="GR (API)", range=[0, 200], row=1, col=1)
     fig.update_xaxes(title_text="Vshale (%)", range=[0, 100], row=1, col=2)
-    fig.update_xaxes(title_text="Porosity (%)", range=[50, 0], row=1, col=3)  # Reversed standard porosity scale
+    fig.update_xaxes(title_text="Porosity (%)", range=[50, 0], row=1, col=3)
     fig.update_xaxes(title_text="Porosity (%)", range=[50, 0], row=1, col=4)
     
     fig.update_layout(
         height=850,
         paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='#0f172a',
+        plot_bgcolor='#1c2541',
         font=dict(color='#94a3b8', family='DM Sans'),
         showlegend=True,
         legend=dict(orientation="h", y=-0.05, x=0.1)
@@ -395,28 +423,28 @@ with tab2:
         
         st.markdown("""
         **Method Comparison Notes:**
-        - **Linear Index**: Optimistic / upper bound calculation ($V_{sh} = I_{GR}$).
-        - **Steiber Model**: Frequently used for Tertiary sands, corrects linear overestimation.
-        - **Larionov Models**: Tailored for young (soft) vs old (consolidated) formations.
-        - **Clavier Model**: Non-linear response curve for shaly formations.
+        - **Linear Index**: Direct linear relationship ($V_{sh} = I_{GR}$).
+        - **Steiber Model**: Corrects linear overestimation for Tertiary rocks.
+        - **Larionov Models**: Optimized for young (soft) vs. old (consolidated) formations.
+        - **Clavier Model**: Standard non-linear model for shaly sand formations.
         """)
         
     with vcol2:
-        st.markdown("##### Vshale Profile Comparison Chart")
+        st.markdown("##### Vshale Depth Profiles")
         fig_vsh = go.Figure()
-        fig_vsh.add_trace(go.Scatter(x=df_calc['VSH_linear']*100, y=df_calc['DEPTH'], mode='lines', name='Linear', line=dict(color='#ef4444')))
-        fig_vsh.add_trace(go.Scatter(x=df_calc['VSH_steiber']*100, y=df_calc['DEPTH'], mode='lines', name='Steiber', line=dict(color='#3b82f6')))
-        fig_vsh.add_trace(go.Scatter(x=df_calc['VSH_larionov_young']*100, y=df_calc['DEPTH'], mode='lines', name='Larionov (Young)', line=dict(color='#a855f7')))
-        fig_vsh.add_trace(go.Scatter(x=df_calc['VSH_larionov_old']*100, y=df_calc['DEPTH'], mode='lines', name='Larionov (Old)', line=dict(color='#f59e0b')))
-        fig_vsh.add_trace(go.Scatter(x=df_calc['VSH_clavier']*100, y=df_calc['DEPTH'], mode='lines', name='Clavier', line=dict(color='#10b981')))
-        fig_vsh.add_hline(y=actual_depth, line_color="#f59e0b", line_width=2, annotation_text=f"{actual_depth:.1f} ft")
+        fig_vsh.add_trace(go.Scatter(x=df_calc['VSH_linear']*100, y=df_calc['DEPTH'], mode='lines', name='Linear', line=dict(color='#f87171')))
+        fig_vsh.add_trace(go.Scatter(x=df_calc['VSH_steiber']*100, y=df_calc['DEPTH'], mode='lines', name='Steiber', line=dict(color='#60a5fa')))
+        fig_vsh.add_trace(go.Scatter(x=df_calc['VSH_larionov_young']*100, y=df_calc['DEPTH'], mode='lines', name='Larionov (Young)', line=dict(color='#c084fc')))
+        fig_vsh.add_trace(go.Scatter(x=df_calc['VSH_larionov_old']*100, y=df_calc['DEPTH'], mode='lines', name='Larionov (Old)', line=dict(color='#fbbf24')))
+        fig_vsh.add_trace(go.Scatter(x=df_calc['VSH_clavier']*100, y=df_calc['DEPTH'], mode='lines', name='Clavier', line=dict(color='#34d399')))
+        fig_vsh.add_hline(y=actual_depth, line_color="#fbbf24", line_width=2, annotation_text=f"{actual_depth:.1f} ft")
         
         fig_vsh.update_yaxes(autorange="reversed", title_text="Depth (ft)")
         fig_vsh.update_xaxes(title_text="Vshale (%)", range=[0, 100])
         fig_vsh.update_layout(
             height=500,
             paper_bgcolor='rgba(0,0,0,0)',
-            plot_bgcolor='#0f172a',
+            plot_bgcolor='#1c2541',
             font=dict(color='#94a3b8', family='DM Sans'),
             margin=dict(l=0, r=0, t=30, b=0)
         )
@@ -485,7 +513,7 @@ with tab3:
             x=[row['NPHI']],
             y=[row['PHID']],
             mode='markers',
-            marker=dict(size=14, color='#ef4444', symbol='star'),
+            marker=dict(size=14, color='#f87171', symbol='star'),
             name=f"Depth {actual_depth:.1f} ft"
         ))
         
@@ -502,7 +530,7 @@ with tab3:
         fig_xp.update_layout(
             height=450,
             paper_bgcolor='rgba(0,0,0,0)',
-            plot_bgcolor='#0f172a',
+            plot_bgcolor='#1c2541',
             font=dict(color='#94a3b8', family='DM Sans'),
             margin=dict(l=0, r=0, t=30, b=0)
         )
@@ -514,7 +542,7 @@ with tab3:
 with tab4:
     st.markdown("#### Petrophysical Data Explorer")
     
-    st.markdown("##### Search / Filter around Target Depth")
+    st.markdown("##### Filter around Target Depth")
     depth_window = st.slider("Depth Window Around Target Depth (ft):", min_value=10, max_value=200, value=50, step=10)
     
     filtered_df = df_calc[
